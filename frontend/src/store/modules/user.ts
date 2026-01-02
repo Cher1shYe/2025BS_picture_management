@@ -26,6 +26,8 @@ export const useUserStore = defineStore("pure-user", {
     nickname: storageLocal().getItem<DataInfo<number>>(userKey)?.nickname ?? "",
     // 页面级别权限
     roles: storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [],
+    // [新增] 初始化 email
+    email: "",
     // 按钮级别权限
     permissions:
       storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [],
@@ -38,6 +40,10 @@ export const useUserStore = defineStore("pure-user", {
     /** 存储头像 */
     SET_AVATAR(avatar: string) {
       this.avatar = avatar;
+    },
+    /** [新增]  存储邮箱 */
+    SET_EMAIL(email: string) {
+      this.email = email;
     },
     /** 存储用户名 */
     SET_USERNAME(username: string) {

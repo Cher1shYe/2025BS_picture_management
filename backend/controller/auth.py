@@ -160,3 +160,8 @@ def login():
             'success': False, 
             'msg': '用户名或密码错误'
         }), 401
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    # JWT 是无状态的，后端其实不需要做太多操作
+    # 严谨的做法是把 token 加入黑名单，这里简单处理，前端丢弃 token 即可
+    return jsonify({'code': 200, 'success': True, 'msg': '注销成功'})

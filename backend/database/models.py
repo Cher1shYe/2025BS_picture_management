@@ -18,6 +18,8 @@ class User(db.Model):
     password: Mapped[str] = mapped_column(String(128), nullable=False) # 建议存储哈希值
     email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     role: Mapped[int] = mapped_column(Integer, default=1) # 0: admin, 1: user
+    # 新增：头像管理
+    avatar: Mapped[str] = mapped_column(db.String(255), nullable=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     

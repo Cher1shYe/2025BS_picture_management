@@ -20,6 +20,16 @@ export default {
         title: "首页",
         showLink: VITE_HIDE_HOME === "true" ? false : true
       }
+    },
+    {
+      path: "/person",
+      name: "Person",
+      component: () => import("@/views/person/index.vue"),
+      meta: {
+        title: "个人中心",
+        icon: "ep:user", // 需要确保图标库有这个
+        showLink: true
+      }
     }
   ]
 } satisfies RouteConfigsTable;

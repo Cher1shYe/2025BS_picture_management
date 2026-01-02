@@ -11,6 +11,7 @@ from flask_jwt_extended import JWTManager # [新增]
 # 引入蓝图
 from controller.image import image_bp
 from controller.auth import auth_bp # [新增] 还没写，马上写
+from controller.user import user_bp # [新增] 用户信息相关接口
 from database import Initialize
 
 load_dotenv()
@@ -53,6 +54,18 @@ def create_app():
     # --- 注册蓝图 ---
     app.register_blueprint(image_bp)
     app.register_blueprint(auth_bp) # [新增] 注册 Auth 蓝图
+    app.register_blueprint(user_bp) # [新增] User信息处理蓝图
+
+    # [新增] 配置上传文件夹
+    # 存放在 backend/static/uploads/avatars 下
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads', 'avatars')
+    
+    # 如果文件夹不存在，自动创建
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+        
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     
     return app
 
