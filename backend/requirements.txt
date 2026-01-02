@@ -1,4 +1,7 @@
 flask
-flask-squlalchemy
-python-dotenve
+flask_sqlalchemy
+python-dotenv
 flask-cors
+flasgger
+flask-jwt-extended
+email-validator
