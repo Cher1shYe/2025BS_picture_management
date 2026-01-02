@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { $t } from "@/plugins/i18n";
 import { emitter } from "@/utils/mitt";
 import NProgress from "@/utils/progress";
 import { RouteConfigs } from "../../types";
@@ -52,7 +51,6 @@ const {
   onMounted,
   onMouseenter,
   onMouseleave,
-  transformI18n,
   onContentFullScreen
 } = useTags();
 
@@ -347,10 +345,10 @@ function onClickDrop(key, item, selectRoute?: RouteConfigs) {
       setTimeout(() => {
         if (pureSetting.hiddenSideBar) {
           tagsViews[6].icon = ExitFullscreen;
-          tagsViews[6].text = $t("buttons.pureContentExitFullScreen");
+          tagsViews[6].text = "内容区退出全屏";
         } else {
           tagsViews[6].icon = Fullscreen;
-          tagsViews[6].text = $t("buttons.pureContentFullScreen");
+          tagsViews[6].text = "内容区全屏";
         }
       }, 100);
       break;
@@ -597,7 +595,7 @@ onBeforeUnmount(() => {
             <span
               class="tag-title dark:text-text_color_primary! dark:hover:text-primary!"
             >
-              {{ transformI18n(item.meta.title) }}
+              {{ item.meta.title }}
             </span>
             <span
               v-if="
@@ -618,15 +616,11 @@ onBeforeUnmount(() => {
             />
           </template>
           <div v-else class="chrome-tab">
-            <span
-              v-if="index !== 0 && index !== activeIndex"
-              class="chrome-tab-divider bg-[#e2e2e2] dark:bg-[#2d2d2d]"
-            />
             <div class="chrome-tab__bg">
               <TagChrome />
             </div>
             <span class="tag-title">
-              {{ transformI18n(item.meta.title) }}
+              {{ item.meta.title }}
             </span>
             <span
               v-if="isFixedTag(item) ? false : index !== 0"
@@ -635,6 +629,7 @@ onBeforeUnmount(() => {
             >
               <IconifyIconOffline :icon="Close" />
             </span>
+            <span class="chrome-tab-divider" />
           </div>
         </div>
       </div>
@@ -658,7 +653,7 @@ onBeforeUnmount(() => {
         >
           <li v-if="item.show" @click="selectTag(key, item)">
             <IconifyIconOffline :icon="item.icon" />
-            {{ transformI18n(item.text) }}
+            {{ item.text }}
           </li>
         </div>
       </ul>
@@ -682,7 +677,7 @@ onBeforeUnmount(() => {
             :disabled="item.disabled"
           >
             <IconifyIconOffline :icon="item.icon" />
-            {{ transformI18n(item.text) }}
+            {{ item.text }}
           </el-dropdown-item>
         </el-dropdown-menu>
       </template>

@@ -93,7 +93,7 @@ declare global {
     Layout?: string;
     Theme?: string;
     DarkMode?: boolean;
-    ThemeMode?: string;
+    OverallStyle?: string;
     Grey?: boolean;
     Weak?: boolean;
     HideTabs?: boolean;
@@ -108,14 +108,6 @@ declare global {
     TooltipEffect?: Effect;
     ResponsiveStorageNameSpace?: string;
     MenuSearchHistory?: number;
-    MapConfigure?: {
-      amapKey?: string;
-      options: {
-        resizeEnable?: boolean;
-        center?: number[];
-        zoom?: number;
-      };
-    };
   }
 
   /**
@@ -140,18 +132,10 @@ declare global {
     sidebarStatus?: boolean;
     epThemeColor?: string;
     themeColor?: string;
-    themeMode?: string;
+    overallStyle?: string;
     showLogo?: boolean;
     showModel?: string;
     menuSearchHistory?: number;
-    mapConfigure?: {
-      amapKey?: string;
-      options: {
-        resizeEnable?: boolean;
-        center?: number[];
-        zoom?: number;
-      };
-    };
     username?: string;
   }
 
@@ -169,7 +153,7 @@ declare global {
       sidebarStatus?: boolean;
       epThemeColor?: string;
       themeColor?: string;
-      themeMode?: string;
+      overallStyle?: string;
     };
     configure: {
       grey?: boolean;

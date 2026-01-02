@@ -1,5 +1,4 @@
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 import { routerArrays } from "../types";
 import { useGlobal } from "@pureadmin/utils";
 import { useMultiTagsStore } from "@/store/modules/multiTags";
@@ -15,11 +14,6 @@ export function useLayout() {
     ) {
       $storage.tags = routerArrays;
     }
-    /** 国际化 */
-    if (!$storage.locale) {
-      $storage.locale = { locale: $config?.Locale ?? "zh" };
-      useI18n().locale.value = $config?.Locale ?? "zh";
-    }
     /** 导航 */
     if (!$storage.layout) {
       $storage.layout = {
@@ -29,7 +23,7 @@ export function useLayout() {
         sidebarStatus: $config?.SidebarStatus ?? true,
         epThemeColor: $config?.EpThemeColor ?? "#409EFF",
         themeColor: $config?.Theme ?? "light",
-        themeMode: $config?.ThemeMode ?? "light"
+        overallStyle: $config?.OverallStyle ?? "light"
       };
     }
     /** 灰色模式、色弱模式、隐藏标签页 */

@@ -1,4 +1,3 @@
-import { $t } from "@/plugins/i18n";
 const Layout = () => import("@/layout/index.vue");
 
 export default [
@@ -7,7 +6,7 @@ export default [
     name: "Login",
     component: () => import("@/views/login/index.vue"),
     meta: {
-      title: $t("menus.pureLogin"),
+      title: "登录",
       showLink: false
     }
   },
@@ -17,7 +16,7 @@ export default [
     name: "AccessDenied",
     component: () => import("@/views/error/403.vue"),
     meta: {
-      title: $t("menus.pureAccessDenied"),
+      title: "403",
       showLink: false
     }
   },
@@ -27,7 +26,7 @@ export default [
     name: "ServerError",
     component: () => import("@/views/error/500.vue"),
     meta: {
-      title: $t("menus.pureServerError"),
+      title: "500",
       showLink: false
     }
   },
@@ -35,7 +34,7 @@ export default [
     path: "/redirect",
     component: Layout,
     meta: {
-      title: $t("status.pureLoad"),
+      title: "加载中...",
       showLink: false
     },
     children: [
@@ -45,24 +44,5 @@ export default [
         component: () => import("@/layout/redirect.vue")
       }
     ]
-  },
-  {
-    path: "/account-settings",
-    name: "AccountSettings",
-    component: () => import("@/views/account-settings/index.vue"),
-    meta: {
-      title: $t("buttons.pureAccountSettings"),
-      showLink: false
-    }
-  },
-  // 下面是一个无layout菜单的例子（一个全屏空白页面），因为这种情况极少发生，所以只需要在前端配置即可（配置路径：src/router/modules/remaining.ts）
-  {
-    path: "/empty",
-    name: "Empty",
-    component: () => import("@/views/empty/index.vue"),
-    meta: {
-      title: $t("menus.pureEmpty"),
-      showLink: false
-    }
   }
 ] satisfies Array<RouteConfigsTable>;

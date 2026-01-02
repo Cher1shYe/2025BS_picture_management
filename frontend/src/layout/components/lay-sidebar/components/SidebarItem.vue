@@ -4,7 +4,6 @@ import { posix } from "path-browserify";
 import { menuType } from "@/layout/types";
 import { ReText } from "@/components/ReText";
 import { useNav } from "@/layout/hooks/useNav";
-import { transformI18n } from "@/plugins/i18n";
 import SidebarLinkItem from "./SidebarLinkItem.vue";
 import SidebarExtraIcon from "./SidebarExtraIcon.vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
@@ -161,7 +160,7 @@ function resolvePath(routePath) {
         truncated
         class="w-full! px-3! min-w-[54px]! text-center! text-inherit!"
       >
-        {{ transformI18n(onlyOneChild.meta.title) }}
+        {{ onlyOneChild.meta.title }}
       </el-text>
 
       <template #title>
@@ -173,7 +172,7 @@ function resolvePath(routePath) {
             }"
             class="w-full! text-inherit!"
           >
-            {{ transformI18n(onlyOneChild.meta.title) }}
+            {{ onlyOneChild.meta.title }}
           </ReText>
           <SidebarExtraIcon :extraIcon="onlyOneChild.meta.extraIcon" />
         </div>
@@ -212,7 +211,7 @@ function resolvePath(routePath) {
         }"
         :class="textClass"
       >
-        {{ transformI18n(item.meta.title) }}
+        {{ item.meta.title }}
       </ReText>
       <SidebarExtraIcon v-if="!isCollapse" :extraIcon="item.meta.extraIcon" />
     </template>

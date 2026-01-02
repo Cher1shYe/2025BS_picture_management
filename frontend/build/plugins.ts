@@ -1,6 +1,5 @@
 import { cdn } from "./cdn";
 import vue from "@vitejs/plugin-vue";
-import { pathResolve } from "./utils";
 import { viteBuildInfo } from "./info";
 import svgLoader from "vite-svg-loader";
 import Icons from "unplugin-icons/vite";
@@ -11,7 +10,6 @@ import { configCompressPlugin } from "./compress";
 import removeNoMatch from "vite-plugin-router-warn";
 import { visualizer } from "rollup-plugin-visualizer";
 import removeConsole from "vite-plugin-remove-console";
-import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import { codeInspectorPlugin } from "code-inspector-plugin";
 import { vitePluginFakeServer } from "vite-plugin-fake-server";
 
@@ -22,18 +20,9 @@ export function getPluginsList(
   const lifecycle = process.env.npm_lifecycle_event;
   return [
     tailwindcss(),
-    vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: tag => tag === "deep-chat"
-        }
-      }
-    }),
+    vue(),
     // jsx、tsx语法支持
     vueJsx(),
-    VueI18nPlugin({
-      include: [pathResolve("../locales/**")]
-    }),
     /**
      * 在页面上按住组合键时，鼠标在页面移动即会在 DOM 上出现遮罩层并显示相关信息，点击一下将自动打开 IDE 并将光标定位到元素对应的代码位置
      * Mac 默认组合键 Option + Shift

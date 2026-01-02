@@ -3,13 +3,15 @@ import type { App, Component } from "vue";
 import {
   /**
    * 为了方便演示平台将 element-plus 导出的所有组件引入，实际使用中如果你没用到哪个组件，将其注释掉就行
-   * 导出来源：https://github.com/element-plus/element-plus/blob/dev/packages/element-plus/component.ts#L116-L226
+   * 导出来源：https://github.com/element-plus/element-plus/blob/dev/packages/element-plus/component.ts#L111-L211
    * */
   ElAffix,
   ElAlert,
   ElAutocomplete,
   ElAutoResizer,
   ElAvatar,
+  ElAnchor,
+  ElAnchorLink,
   ElBacktop,
   ElBadge,
   ElBreadcrumb,
@@ -30,7 +32,6 @@ import {
   ElCollapse,
   ElCollapseItem,
   ElCollapseTransition,
-  ElColorPickerPanel,
   ElColorPicker,
   ElConfigProvider,
   ElContainer,
@@ -39,7 +40,6 @@ import {
   ElHeader,
   ElMain,
   ElDatePicker,
-  ElDatePickerPanel,
   ElDescriptions,
   ElDescriptionsItem,
   ElDialog,
@@ -56,7 +56,6 @@ import {
   ElImageViewer,
   ElInput,
   ElInputNumber,
-  ElInputTag,
   ElLink,
   ElMenu,
   ElMenuItem,
@@ -108,22 +107,17 @@ import {
   ElWatermark,
   ElTour,
   ElTourStep,
-  ElAnchor,
-  ElAnchorLink,
   ElSegmented,
-  ElMention,
-  ElSplitter,
-  ElSplitterPanel,
   /**
    * 为了方便演示平台将 element-plus 导出的所有插件引入，实际使用中如果你没用到哪个插件，将其注释掉就行
    * 导出来源：https://github.com/element-plus/element-plus/blob/dev/packages/element-plus/plugin.ts#L11-L16
    * */
-  ElInfiniteScroll, // v-infinite-scroll 指令
   ElLoading, // v-loading 指令
+  ElInfiniteScroll, // v-infinite-scroll 指令
+  ElPopoverDirective, // v-popover 指令
   ElMessage, // $message 全局属性对象globalProperties
   ElMessageBox, // $msgbox、$alert、$confirm、$prompt 全局属性对象globalProperties
-  ElNotification, // $notify 全局属性对象globalProperties
-  ElPopoverDirective // v-popover 指令
+  ElNotification // $notify 全局属性对象globalProperties
 } from "element-plus";
 
 const components = [
@@ -132,6 +126,8 @@ const components = [
   ElAutocomplete,
   ElAutoResizer,
   ElAvatar,
+  ElAnchor,
+  ElAnchorLink,
   ElBacktop,
   ElBadge,
   ElBreadcrumb,
@@ -152,7 +148,6 @@ const components = [
   ElCollapse,
   ElCollapseItem,
   ElCollapseTransition,
-  ElColorPickerPanel,
   ElColorPicker,
   ElConfigProvider,
   ElContainer,
@@ -161,7 +156,6 @@ const components = [
   ElHeader,
   ElMain,
   ElDatePicker,
-  ElDatePickerPanel,
   ElDescriptions,
   ElDescriptionsItem,
   ElDialog,
@@ -178,7 +172,6 @@ const components = [
   ElImageViewer,
   ElInput,
   ElInputNumber,
-  ElInputTag,
   ElLink,
   ElMenu,
   ElMenuItem,
@@ -230,21 +223,16 @@ const components = [
   ElWatermark,
   ElTour,
   ElTourStep,
-  ElAnchor,
-  ElAnchorLink,
-  ElSegmented,
-  ElMention,
-  ElSplitter,
-  ElSplitterPanel
+  ElSegmented
 ];
 
 const plugins = [
-  ElInfiniteScroll,
   ElLoading,
+  ElInfiniteScroll,
+  ElPopoverDirective,
   ElMessage,
   ElMessageBox,
-  ElNotification,
-  ElPopoverDirective
+  ElNotification
 ];
 
 /** 按需引入`element-plus` */

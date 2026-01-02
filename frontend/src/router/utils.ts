@@ -147,7 +147,7 @@ function addPathMatch() {
       name: "PageNotFound",
       component: () => import("@/views/error/404.vue"),
       meta: {
-        title: "menus.purePageNotFound",
+        title: "404",
         showLink: false
       }
     });
