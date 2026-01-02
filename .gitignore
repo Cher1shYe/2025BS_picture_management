@@ -1,0 +1,33 @@
+# .gitignore
+
+# 1. 密钥与配置
+.env
+config.yaml
+*.key
+
+# 2. Python 编译文件与缓存
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 3. 虚拟环境
+venv/
+env/
+.venv/
+
+# 4. 系统生成文件
+.DS_Store
+Thumbs.db
+
+# 5. IDE 配置文件(可选)
+.idea/
+.vscode/
+
+# 6. 项目运行时产生的文件
+backend/static/uploads/*
+!backend/static/uploads/.gitkeep
+
+# 7. 前端依赖
+node_modules/
+dist/
+npm-debug.log

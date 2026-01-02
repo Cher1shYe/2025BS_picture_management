@@ -1,0 +1,4 @@
+flask
+flask-squlalchemy
+python-dotenve
+flask-cors
