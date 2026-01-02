@@ -79,7 +79,7 @@ const handleUpdatePwd = async () => {
       // 显示后端返回的 msg
       message(res.msg || "修改失败", { type: "error" });
     }
-  } catch(err: any) {
+  } catch (err: any) {
     // 4. 捕获深层错误 (400/500)
     console.error("修改密码报错:", err);
     // 尝试读取后端返回的具体错误信息
