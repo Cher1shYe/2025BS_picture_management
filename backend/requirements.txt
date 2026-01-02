@@ -6,3 +6,4 @@ flasgger
 flask-jwt-extended
 email-validator
 pymysql
+cryptography

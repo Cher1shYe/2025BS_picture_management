@@ -84,7 +84,7 @@ def register():
     # generate_password_hash 会把 "123456" 变成 "pbkdf2:sha256:..." 这种乱码
     new_user = User(
         username=username,
-        password=generate_password_hash(password), 
+        password=generate_password_hash(password, method='pbkdf2:sha256'), 
         email=email,
         role=1
     )
