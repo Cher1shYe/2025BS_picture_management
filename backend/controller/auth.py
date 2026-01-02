@@ -52,6 +52,12 @@ def register():
     password = data.get('password')
     email = data.get('email')
 
+    password = data.get('password')
+    if password is not None:
+        password = str(password) # 不管传进来是数字还是字符串，统统转成字符串
+        
+    email = data.get('email')
+
     # 1. 基础非空校验
     if not all([username, password, email]):
         return jsonify({'code': 400, 'msg': '请填写完整信息'}), 400
@@ -74,7 +80,7 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({'code': 400, 'msg': '邮箱已被注册'}), 400
 
-    # 5. 创建用户 (密码一定要加密存储！)
+    # 5. 创建用户 (加密存储)
     # generate_password_hash 会把 "123456" 变成 "pbkdf2:sha256:..." 这种乱码
     new_user = User(
         username=username,

@@ -5,3 +5,4 @@ flask-cors
 flasgger
 flask-jwt-extended
 email-validator
+pymysql
