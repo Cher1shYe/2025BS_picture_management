@@ -282,6 +282,9 @@ def delete_image():
         return jsonify({'code': 404, 'msg': '图片不存在或无权删除'}), 404
 
     try:
+        # 2. 【核心新增】先把这张图关联的标签保存下来（因为删了图，关系就断了，得提前存）
+        # 使用 list() 复制一份列表，否则 session 变动可能会影响引用
+        tags_to_check = list(img.tags)
         # 4. 定位物理文件路径 (完全复用 upload 的路径逻辑)
         # 从配置中读取上传根目录
         upload_dir = current_app.config['UPLOAD_FOLDER']
@@ -307,6 +310,16 @@ def delete_image():
 
         # 6. 删除数据库记录
         db.session.delete(img)
+        # 这里先 flush 一下，让数据库知道 img 已经没了，
+        # 这样下面检查 tag.images 时，就不会包含这张刚删掉的图了
+        db.session.flush() 
+        # 5. 【核心新增】遍历刚才存下来的标签，检查谁变成了孤儿
+        for tag in tags_to_check:
+            # 如果这个标签关联的图片列表为空 (或者只剩刚被删的那个，但 flush 后应该为空)
+            if not tag.images:
+                db.session.delete(tag)
+                print(f"标签 '{tag.name}' 因图片删除变成孤儿，已自动清除。")
+                
         db.session.commit()
 
         return jsonify({'code': 200, 'msg': '删除成功'})
@@ -340,6 +353,12 @@ def remove_tag_from_image():
     # 3. 移除关联
     if tag and tag in img.tags:
         img.tags.remove(tag)
+        # 【核心新增】: 检查这个标签是否成了“孤儿”
+        # tag.images 是 SQLAlchemy 的反向引用，列表里是所有使用这个标签的图片
+        # 如果列表为空，说明没人用它了，删！
+        if not tag.images: 
+            db.session.delete(tag)
+            print(f"标签 '{tag_name}' 已无引用，自动从数据库删除。")
         db.session.commit()
         return jsonify({'code': 200, 'msg': '标签移除成功'})
     else:

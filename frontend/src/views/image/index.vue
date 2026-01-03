@@ -142,6 +142,7 @@ const handleDelete = (id: number) => {
           message("删除成功", { type: "success" });
           // 刷新列表
           getImages();
+          getAllTags();
         } else {
           message(res.data.msg || "删除失败", { type: "error" });
         }
@@ -192,6 +193,7 @@ const handleRemoveTag = async (imageId: number, tagName: string) => {
       // 可以在这里手动从 imageList 里移除该标签以避免重新加载整个列表，
       // 但为了数据一致性，重新获取列表最简单
       getImages();
+      getAllTags(); // 刷新下拉筛选框，让已经删除的标签不在搜索选项中出现
     } else {
       message(res.data.msg, { type: "warning" });
     }
