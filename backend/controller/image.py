@@ -138,6 +138,15 @@ def get_image_list():
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 20, type=int)
     keyword = request.args.get('keyword', '', type=str)
+
+    # 2. 获取高级筛选参数
+    tag_id = request.args.get('tag_id', type=int) # 按标签ID筛选
+    start_date = request.args.get('start_date', type=str) # 格式 'YYYY-MM-DD'
+    end_date = request.args.get('end_date', type=str)     # 格式 'YYYY-MM-DD'
+
+    # 3. 获取文件名和地点搜索关键词
+    keyword = request.args.get('keyword', '', type=str)   # 仅用于搜索文件名
+    location = request.args.get('location', '', type=str) # 【新增】专门搜索地点
     
     base_url = request.host_url.rstrip('/')
 
@@ -149,16 +158,38 @@ def get_image_list():
         query = query.filter(
             or_(
                 Image.original_name.like(f'%{keyword}%'),
-                Image.location_str.like(f'%{keyword}%'),
-                # 甚至可以搜索标签 (稍微复杂点，先放着)
             )
         )
+    # 【新增】按标签筛选
+    if tag_id:
+        # join Image.tags 关系字段，找到包含该 tag_id 的图片
+        query = query.join(Image.tags).filter(Tag.tid == tag_id)
     
+    # 【新增】地点搜索 (基于 EXIF location_str 字段)
+    if location:
+        query = query.filter(Image.location_str.ilike(f'%{location}%'))
     # 按时间倒序排列 (最新的在前)
     query = query.order_by(Image.upload_time.desc())
+
+    # 【新增】按时间范围筛选 (优先用 shot_time，没有则用 upload_time)
+    # 这里稍微简化，只筛选 shot_time，实际业务中可以用 coalesce
+    if start_date and end_date:
+        try:
+            # 转换字符串为日期对象，注意 end_date 要加一天或设为当晚23:59:59
+            s_date = datetime.strptime(start_date, '%Y-%m-%d')
+            e_date = datetime.strptime(end_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+            
+            query = query.filter(
+                Image.shot_time.between(s_date, e_date)
+            )
+        except ValueError:
+            pass # 日期格式不对就不筛了
     
-    # 执行分页
-    pagination = query.paginate(page=page, per_page=limit, error_out=False)
+
+    # 排序与分页
+    pagination = query.order_by(Image.upload_time.desc()).paginate(
+        page=page, per_page=limit, error_out=False
+    )
     
     # 格式化返回数据
     img_list = []
@@ -183,6 +214,52 @@ def get_image_list():
             'items': img_list
         }
     })
+
+# =========== 【新增】给图片添加自定义标签 ===========
+@image_bp.route('/add_tag', methods=['POST'])
+@jwt_required()
+def add_tag_to_image():
+    data = request.json
+    image_id = data.get('image_id')
+    tag_name = data.get('tag_name')
+
+    if not image_id or not tag_name:
+        return jsonify({'code': 400, 'msg': '参数不全'}), 400
+
+    current_uid = get_jwt_identity()
+    
+    # 1. 确认图片属于该用户
+    img = Image.query.filter_by(iid=image_id, uid=current_uid).first()
+    if not img:
+        return jsonify({'code': 404, 'msg': '图片不存在'}), 404
+
+    # 2. 处理标签
+    tag_name = tag_name.strip()
+    # 查库看标签是否已存在
+    tag = Tag.query.filter_by(name=tag_name).first()
+    if not tag:
+        # 不存在则新建 (类型 manual)
+        tag = Tag(name=tag_name, type='manual')
+        db.session.add(tag)
+        db.session.flush() # 刷新以获取 tag.tid
+    
+    # 3. 建立关联 (如果还没关联的话)
+    if tag not in img.tags:
+        img.tags.append(tag)
+        db.session.commit()
+        return jsonify({'code': 200, 'msg': '标签添加成功'})
+    else:
+        return jsonify({'code': 200, 'msg': '标签已存在'})
+    
+# =========== 【新增】获取系统所有标签 (用于前端下拉筛选，非必要，做着玩) ===========
+@image_bp.route('/all_tags', methods=['GET'])
+@jwt_required()
+def get_all_tags():
+    # 这里简单处理：返回数据库里所有的标签
+    # 进阶做法是：只返回当前用户用过的标签 (需要连表查询)，为了演示简单，先取全部
+    tags = Tag.query.all()
+    tag_list = [{'id': t.tid, 'name': t.name} for t in tags]
+    return jsonify({'code': 200, 'data': tag_list})
 
 # =========== 【新增】删除图片接口 ===========
 @image_bp.route('/delete', methods=['POST'])
