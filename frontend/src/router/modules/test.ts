@@ -5,7 +5,7 @@ export default {
     icon: "ri/information-line",
     // showLink: false,
     title: "测试页面",
-    rank: 10,
+    rank: 100
   },
   children: [
     {
