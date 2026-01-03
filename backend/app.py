@@ -10,8 +10,9 @@ from flask_jwt_extended import JWTManager # [新增]
 
 # 引入蓝图
 from controller.image import image_bp
-from controller.auth import auth_bp # [新增] 还没写，马上写
+from controller.auth import auth_bp 
 from controller.user import user_bp # [新增] 用户信息相关接口
+from controller.ai import ai_bp
 from database import Initialize
 
 load_dotenv()
@@ -67,6 +68,7 @@ def create_app():
     app.register_blueprint(image_bp)
     app.register_blueprint(auth_bp) # [新增] 注册 Auth 蓝图
     app.register_blueprint(user_bp) # [新增] User信息处理蓝图
+    app.register_blueprint(ai_bp) # 注册ai蓝图
 
     # [新增] 配置上传文件夹
     # 存放在 backend/static/uploads/avatars 下
