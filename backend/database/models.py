@@ -61,7 +61,7 @@ class Image(db.Model):
     
     # EXIF 信息 (自动提取)
     shot_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    location_str: Mapped[str] = mapped_column(String(255), nullable=True) # 如 "杭州市, 浙江省"
+    location_str: Mapped[str] = mapped_column(String(255), nullable=True) 
     latitude: Mapped[float] = mapped_column(Float, nullable=True)
     longitude: Mapped[float] = mapped_column(Float, nullable=True)
     camera_model: Mapped[str] = mapped_column(String(100), nullable=True)

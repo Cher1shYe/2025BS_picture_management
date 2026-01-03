@@ -6,6 +6,9 @@ from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import or_
 
+from database.models import Image, Tag
+from utils.image_process import make_thumbnail, extract_exif
+
 # 引用我们刚刚定义的 db 和模型
 from exts import db
 from database.models import Image, Tag, User
@@ -138,3 +141,58 @@ def get_image_list():
             'items': img_list
         }
     })
+
+# =========== 【新增】删除图片接口 ===========
+@image_bp.route('/delete', methods=['POST'])
+@jwt_required()
+def delete_image():
+    # 1. 获取参数
+    data = request.json
+    image_id = data.get('id')
+
+    if not image_id:
+        return jsonify({'code': 400, 'msg': '参数缺失'}), 400
+
+    # 2. 获取当前用户
+    current_uid = get_jwt_identity()
+
+    # 3. 查库：必须同时满足 ID存在 且 是当前用户的图
+    img = Image.query.filter_by(iid=image_id, uid=current_uid).first()
+    
+    if not img:
+        return jsonify({'code': 404, 'msg': '图片不存在或无权删除'}), 404
+
+    try:
+        # 4. 定位物理文件路径 (完全复用 upload 的路径逻辑)
+        # 从配置中读取上传根目录
+        upload_dir = current_app.config['UPLOAD_FOLDER']
+        
+        # 拼接原图路径
+        file_path = os.path.join(upload_dir, img.filename)
+        
+        # 拼接缩略图路径 (假设之前的逻辑是存放在 thumbs 子目录下)
+        # 如果你之前的 upload 没生成 thumbs 目录，这段代码也不会报错，因为有 exists 判断
+        thumb_path = os.path.join(upload_dir, 'thumbs', img.filename)
+
+        # 5. 删除物理文件
+        # 删除原图
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"已删除文件: {file_path}")
+        else:
+            print(f"文件未找到(可能已被删): {file_path}")
+
+        # 删除缩略图
+        if os.path.exists(thumb_path):
+            os.remove(thumb_path)
+
+        # 6. 删除数据库记录
+        db.session.delete(img)
+        db.session.commit()
+
+        return jsonify({'code': 200, 'msg': '删除成功'})
+
+    except Exception as e:
+        print(f"删除失败: {e}")
+        db.session.rollback()
+        return jsonify({'code': 500, 'msg': '删除失败: ' + str(e)}), 500
