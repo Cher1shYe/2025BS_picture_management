@@ -21,6 +21,17 @@ def create_app():
     
     # --- 1. 基础配置 ---
     CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+    # 2. 强制给所有响应（包括静态图片）加上 CORS 头
+    @app.after_request
+    def after_request(response):
+        # 允许跨域的 Origin
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        # 允许的 Headers
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        # 允许的方法
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
     
     DB_USER = os.getenv('DB_USER')
     DB_PASSWORD = os.getenv('DB_PASSWORD')

@@ -9,10 +9,13 @@ import {
   Refresh,
   Delete,
   PriceTag,
-  Location
+  Location,
+  Edit
 } from "@element-plus/icons-vue";
 // 引入 Delete 图标 和 ElMessageBox 弹窗组件
 import { ElMessageBox } from "element-plus";
+
+import ImageEditor from "@/components/ImageEditor/index.vue";
 
 defineOptions({
   name: "ImageList"
@@ -213,6 +216,19 @@ const handleCurrentChange = (val: number) => {
   getImages();
 };
 
+const editorRef = ref();
+
+// 点击编辑按钮触发的函数
+const handleEdit = (item: any) => {
+  // 传入原图 URL（注意不是缩略图）
+  editorRef.value.open(item.url);
+};
+
+// 编辑保存后的回调（刷新列表）
+const onEditorSuccess = () => {
+  getImages();
+};
+
 onMounted(() => {
   getAllTags();
   getImages();
@@ -345,7 +361,7 @@ onMounted(() => {
                 >
                   {{ tag }}
                 </el-tag>
-                <!-- 【关键】添加标签的小按钮 -->
+                <!-- 添加标签的小按钮 -->
                 <el-button
                   size="small"
                   circle
@@ -369,6 +385,15 @@ onMounted(() => {
                 >
                   删除
                 </el-button>
+                <!-- 【新增】编辑按钮 -->
+                <el-button
+                  type="primary"
+                  circle
+                  size="small"
+                  :icon="Edit"
+                  title="编辑图片"
+                  @click.stop="handleEdit(item)"
+                />
               </div>
             </div>
           </el-card>
@@ -387,6 +412,7 @@ onMounted(() => {
         />
       </div>
     </el-card>
+    <ImageEditor ref="editorRef" :refresh-list="onEditorSuccess" />
   </div>
 </template>
 
