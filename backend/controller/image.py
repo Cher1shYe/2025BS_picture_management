@@ -315,3 +315,32 @@ def delete_image():
         print(f"删除失败: {e}")
         db.session.rollback()
         return jsonify({'code': 500, 'msg': '删除失败: ' + str(e)}), 500
+    
+# =========== 【新增】移除图片的标签 ===========
+@image_bp.route('/remove_tag', methods=['POST'])
+@jwt_required()
+def remove_tag_from_image():
+    data = request.json
+    image_id = data.get('image_id')
+    tag_name = data.get('tag_name') # 前端传标签名过来
+
+    if not image_id or not tag_name:
+        return jsonify({'code': 400, 'msg': '参数不全'}), 400
+
+    current_uid = get_jwt_identity()
+    
+    # 1. 查找图片 (确保是自己的)
+    img = Image.query.filter_by(iid=image_id, uid=current_uid).first()
+    if not img:
+        return jsonify({'code': 404, 'msg': '图片不存在'}), 404
+
+    # 2. 查找标签
+    tag = Tag.query.filter_by(name=tag_name).first()
+    
+    # 3. 移除关联
+    if tag and tag in img.tags:
+        img.tags.remove(tag)
+        db.session.commit()
+        return jsonify({'code': 200, 'msg': '标签移除成功'})
+    else:
+        return jsonify({'code': 400, 'msg': '标签未关联或不存在'})

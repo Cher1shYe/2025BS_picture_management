@@ -179,6 +179,27 @@ const handleAddTag = (imageId: number) => {
   });
 };
 
+/** 【新增】移除标签 */
+const handleRemoveTag = async (imageId: number, tagName: string) => {
+  try {
+    const res = await axios.post(
+      "/api/image/remove_tag",
+      { image_id: imageId, tag_name: tagName },
+      { headers: { Authorization: "Bearer " + getToken()?.accessToken } }
+    );
+    if (res.data.code === 200) {
+      message("已移除标签", { type: "success" });
+      // 可以在这里手动从 imageList 里移除该标签以避免重新加载整个列表，
+      // 但为了数据一致性，重新获取列表最简单
+      getImages();
+    } else {
+      message(res.data.msg, { type: "warning" });
+    }
+  } catch (e) {
+    message("移除失败", { type: "error" });
+  }
+};
+
 /** 处理分页切换 */
 const handleSizeChange = (val: number) => {
   queryParams.limit = val;
@@ -317,11 +338,12 @@ onMounted(() => {
                   :key="tag"
                   size="small"
                   effect="light"
+                  closable
+                  @close="handleRemoveTag(item.id, tag)"
                 >
                   {{ tag }}
                 </el-tag>
                 <!-- 【关键】添加标签的小按钮 -->
-                <!-- TODO 添加标签按钮位置待调整 -->
                 <el-button
                   size="small"
                   circle
