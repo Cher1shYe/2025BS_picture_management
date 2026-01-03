@@ -47,6 +47,7 @@ def create_app():
 
     # --- 文件上传配置 ---
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+    app.config['AVATAR_UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads', 'avatars')
     
     # --- 初始化 ---
     db.init_app(app)
@@ -59,13 +60,17 @@ def create_app():
     # [新增] 配置上传文件夹
     # 存放在 backend/static/uploads/avatars 下
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads', 'avatars')
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+    AVATAR_UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads', 'avatars')
     
     # 如果文件夹不存在，自动创建
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
+    if not os.path.exists(AVATAR_UPLOAD_FOLDER):
+        os.makedirs(AVATAR_UPLOAD_FOLDER)
         
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    app.config['AVATAR_UPLOAD_FOLDER'] = AVATAR_UPLOAD_FOLDER
     
     return app
 
@@ -73,4 +78,6 @@ if __name__ == '__main__':
     app = create_app()
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
+    if not os.path.exists(app.config['AVATAR_UPLOAD_FOLDER']):
+        os.makedirs(app.config['AVATAR_UPLOAD_FOLDER'])
     app.run(host='0.0.0.0', port=5001, debug=True)

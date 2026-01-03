@@ -24,6 +24,7 @@ CREATE TABLE `user` (
   `password` varchar(255) NOT NULL COMMENT '密码(加密后)',
   `email` varchar(100) NOT NULL COMMENT '邮箱',
   `role` int DEFAULT 1 COMMENT '角色 0:admin, 1:user',
+  `avatar` varchar(255) DEFAULT NULL COMMENT '头像URL',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `uk_username` (`username`),

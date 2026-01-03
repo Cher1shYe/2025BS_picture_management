@@ -3,6 +3,7 @@ import os
 import uuid
 from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import or_
 
 # 引用我们刚刚定义的 db 和模型
@@ -13,11 +14,12 @@ from database.models import Image, Tag, User
 image_bp = Blueprint('image', __name__, url_prefix='/api/image')
 
 # 1. 图片上传接口
-# 访问方式: POST http://localhost:5000/api/image/upload
+# 访问方式: POST http://localhost:5001/api/image/upload
 # 参数: form-data key='file'
 @image_bp.route('/upload', methods=['POST'])
+@jwt_required() # [修复] 必须登录才能传
 def upload_image():
-    # 1. 检查有没有文件
+    # 1. 检查有没有文件 
     if 'file' not in request.files:
         return jsonify({'code': 400, 'msg': '未上传文件'}), 400
     
@@ -26,7 +28,7 @@ def upload_image():
         return jsonify({'code': 400, 'msg': '文件名为空'}), 400
 
     # 2. 获取当前用户 (暂时写死 uid=1，等做了登录后再换成 current_user.uid)
-    current_uid = 1 
+    current_uid = get_jwt_identity()
 
     # 3. 生成安全的文件名 (防止文件名冲突或中文乱码)
     # 例如: my_photo.jpg -> a1b2c3d4.jpg
@@ -82,14 +84,18 @@ def upload_image():
 
 
 # 2. 获取图片列表接口 (支持搜索、分页)
-# 访问方式: GET http://localhost:5000/api/image/list?page=1&limit=20&keyword=杭州
+# 访问方式: GET http://localhost:5001/api/image/list?page=1&limit=20&keyword=杭州
 @image_bp.route('/list', methods=['GET'])
+@jwt_required() # [修复1] 必须登录
 def get_image_list():
+    current_uid = get_jwt_identity()
     # 获取参数
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 20, type=int)
     keyword = request.args.get('keyword', '', type=str)
     
+    base_url = request.host_url.rstrip('/')
+
     # 构建查询
     query = Image.query
     
@@ -112,11 +118,13 @@ def get_image_list():
     # 格式化返回数据
     img_list = []
     for img in pagination.items:
+        full_url = f"{base_url}{img.url}"
+        full_thumb = f"{base_url}{img.thumb_url}"
         img_list.append({
             'id': img.iid,
             'name': img.original_name,
-            'url': img.url,
-            'thumb': img.thumb_url,
+            'url': full_url,
+            'thumb': full_thumb,
             'date': img.shot_time.strftime('%Y-%m-%d') if img.shot_time else img.upload_time.strftime('%Y-%m-%d'),
             'location': img.location_str,
             'tags': [t.name for t in img.tags]

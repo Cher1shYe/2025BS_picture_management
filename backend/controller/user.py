@@ -29,7 +29,7 @@ def get_user_info():
     avatar_url = ""
     if user.avatar:
         # 假设我们通过 static 目录访问
-        avatar_url = f"http://localhost:5000/static/uploads/avatars/{user.avatar}"
+        avatar_url = f"http://localhost:5001/static/uploads/avatars/{user.avatar}"
     
     return jsonify({
         'code': 200,
@@ -42,6 +42,7 @@ def get_user_info():
         }
     })
 
+# --2. 修改用户信息 ---
 @user_bp.route('/update/info', methods=['POST'])
 @jwt_required()
 def update_info():
@@ -93,19 +94,41 @@ def update_info():
 @user_bp.route('/update/password', methods=['POST'])
 @jwt_required()
 def update_password():
-    uid = get_jwt_identity()
-    user = db.session.get(User, uid)
-    data = request.json
-    
-    old_pass = data.get('oldPassword')
-    new_pass = data.get('newPassword')
-    
-    if not check_password_hash(user.password, old_pass):
-        return jsonify({'code': 400, 'success': False, 'msg': '旧密码错误'})
+    try:
+        uid = get_jwt_identity()
+        user = db.session.get(User, uid)
         
-    user.password = generate_password_hash(new_pass)
-    db.session.commit()
-    return jsonify({'code': 200, 'success': True, 'msg': '密码修改成功'})
+        # 兼容处理：获取前端传来的数据
+        req_json = request.json
+        data = req_json.get('data') if req_json and 'data' in req_json else req_json
+        
+        old_pass = data.get('oldPassword')
+        new_pass = data.get('newPassword')
+        
+        # 1. 简单校验
+        if not old_pass or not new_pass:
+            return jsonify({'code': 400, 'success': False, 'msg': '参数不完整'}), 400
+        
+        if len(new_pass) < 6:
+            return jsonify({'code': 400, 'success': False, 'msg': '新密码长度不能少于6位'}), 400
+        
+        # 2. 校验旧密码
+        if not check_password_hash(user.password, old_pass):
+            return jsonify({'code': 400, 'success': False, 'msg': '旧密码不正确'}), 400
+            
+        # 3. 加密新密码 [关键修复点]
+        # 必须加上 method='pbkdf2:sha256'
+        hashed_password = generate_password_hash(new_pass, method='pbkdf2:sha256')
+        
+        user.password = hashed_password
+        db.session.commit()
+        
+        return jsonify({'code': 200, 'success': True, 'msg': '密码修改成功，请重新登录'})
+
+    except Exception as e:
+        print(f"修改密码报错: {str(e)}") # 打印错误到终端方便调试
+        db.session.rollback()
+        return jsonify({'code': 500, 'success': False, 'msg': '服务器内部错误'}), 500
 
 # --- 4. 上传/修改头像 ---
 @user_bp.route('/update/avatar', methods=['POST'])
@@ -113,7 +136,7 @@ def update_password():
 def upload_avatar():
     if 'file' not in request.files:
         return jsonify({'code': 400, 'msg': '没有文件上传', 'success': False})
-        
+    
     file = request.files['file']
     if file.filename == '':
         return jsonify({'code': 400, 'msg': '未选择文件', 'success': False})
@@ -123,7 +146,7 @@ def upload_avatar():
         ext = file.filename.rsplit('.', 1)[1].lower()
         filename = str(uuid.uuid4()) + "." + ext
         
-        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        save_path = os.path.join(current_app.config['AVATAR_UPLOAD_FOLDER'], filename)
         file.save(save_path)
         
         # 更新数据库
@@ -132,7 +155,7 @@ def upload_avatar():
         user.avatar = filename
         db.session.commit()
         
-        full_url = f"http://localhost:5000/static/uploads/avatars/{filename}"
+        full_url = f"http://localhost:5001/static/uploads/avatars/{filename}"
         
         return jsonify({'code': 200, 'success': True, 'msg': '头像上传成功', 'data': {'avatar': full_url}})
     
