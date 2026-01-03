@@ -3,7 +3,9 @@ import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
 import { getToken } from "@/utils/auth";
 import axios from "axios";
-import { Plus, Search, Refresh } from "@element-plus/icons-vue";
+import { Plus, Search, Refresh, Delete } from "@element-plus/icons-vue";
+// 引入 Delete 图标 和 ElMessageBox 弹窗组件
+import { ElMessageBox } from "element-plus";
 
 defineOptions({
   name: "ImageList"
@@ -71,6 +73,39 @@ const handleUpload = async (options: any) => {
   }
 };
 
+/** 【新增】处理删除逻辑 */
+const handleDelete = (id: number) => {
+  ElMessageBox.confirm("确定要永久删除这张图片吗？此操作不可恢复", "警告", {
+    confirmButtonText: "确定删除",
+    cancelButtonText: "取消",
+    type: "warning"
+  })
+    .then(async () => {
+      try {
+        const res = await axios.post(
+          "/api/image/delete",
+          { id: id },
+          {
+            headers: { Authorization: "Bearer " + getToken()?.accessToken }
+          }
+        );
+
+        if (res.data.code === 200) {
+          message("删除成功", { type: "success" });
+          // 刷新列表
+          getImages();
+        } else {
+          message(res.data.msg || "删除失败", { type: "error" });
+        }
+      } catch (error) {
+        message("请求出错", { type: "error" });
+      }
+    })
+    .catch(() => {
+      // 用户点击取消，不做任何事
+    });
+};
+
 /** 4. 处理分页切换 */
 const handleSizeChange = (val: number) => {
   queryParams.limit = val;
@@ -136,7 +171,7 @@ onMounted(() => {
           <el-card
             :body-style="{ padding: '0px' }"
             shadow="hover"
-            class="image-card"
+            class="image-card group"
           >
             <el-image
               style="width: 100%; height: 200px"
@@ -154,7 +189,7 @@ onMounted(() => {
                   {{ item.location }}
                 </el-tag>
               </div>
-              <div class="mt-2 flex flex-wrap gap-1">
+              <div class="mt-2 flex flex-wrap gap-1 h-6 overflow-hidden">
                 <el-tag
                   v-for="tag in item.tags"
                   :key="tag"
@@ -163,6 +198,25 @@ onMounted(() => {
                 >
                   {{ tag }}
                 </el-tag>
+              </div>
+              <!-- 【修改 2】新增：底部操作栏 (分割线 + 删除按钮) -->
+              <div
+                class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center"
+              >
+                <!-- 显示分辨率，显得专业点 -->
+                <span class="text-xs text-gray-400">{{
+                  item.resolution || "未知尺寸"
+                }}</span>
+                <!-- 删除按钮：红色，文字按钮，带图标 -->
+                <el-button
+                  type="danger"
+                  link
+                  size="small"
+                  :icon="Delete"
+                  @click="handleDelete(item.id)"
+                >
+                  删除
+                </el-button>
               </div>
             </div>
           </el-card>

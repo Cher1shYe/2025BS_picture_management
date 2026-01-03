@@ -8,6 +8,7 @@ from sqlalchemy import or_
 
 from database.models import Image, Tag
 from utils.image_process import make_thumbnail, extract_exif
+from datetime import datetime # 处理时间
 
 # 引用我们刚刚定义的 db 和模型
 from exts import db
@@ -46,28 +47,69 @@ def upload_image():
         os.makedirs(upload_dir)
         
     save_path = os.path.join(upload_dir, unique_filename)
+
+    # [新增] 缩略图路径 (在 uploads 下创建一个 thumbs 文件夹)
+    thumb_dir = os.path.join(upload_dir, 'thumbs')
+    if not os.path.exists(thumb_dir):
+        os.makedirs(thumb_dir)
+    thumb_path = os.path.join(thumb_dir, unique_filename)
     
     # 5. 保存文件到磁盘
     try:
         file.save(save_path)
-        
-        # TODO: 这里未来要加入: 
-        # 1. 生成缩略图 
-        # 2. 提取 EXIF 信息
-        # 暂时先填默认值
+
+        # 生成缩略图
+        has_thumb = make_thumbnail(save_path, thumb_path)
+
+        # 提取 EXIF 信息
+        exif = extract_exif(save_path)
+
+        # 解析拍摄时间 (字符串 -> datetime 对象)
+        shot_time_obj = None
+        if exif['shot_time']:
+            try:
+                # 尝试解析常见的 EXIF 时间格式
+                shot_time_obj = datetime.strptime(exif['shot_time'], '%Y:%m:%d %H:%M:%S')
+            except:
+                pass # 解析失败就留空，不影响上传
+
         
         # 6. 写入数据库
         # 生成访问 URL (前端通过这个 URL 这里的 /static/.. 访问图片)
         url_path = f"/static/uploads/{unique_filename}"
+
+        # 如果生成了缩略图，就用缩略图路径，否则用原图
+        thumb_url_path = f"/static/uploads/thumbs/{unique_filename}" if has_thumb else url_path
         
         new_img = Image(
             uid=current_uid,
             filename=unique_filename,
             original_name=original_name,
             url=url_path,
-            thumb_url=url_path # 暂时用原图当缩略图
+            thumb_url=thumb_url_path # [修改] 把原图变成缩略图
         )
         new_img.file_size = os.path.getsize(save_path) // 1024 # KB
+
+        # [新增] 填入 EXIF 数据 (对应你的 models.py 字段)
+        new_img.shot_time = shot_time_obj
+        new_img.camera_model = exif['camera_model']
+        new_img.location_str = exif['location_str']
+        new_img.latitude = exif['latitude']
+        new_img.longitude = exif['longitude']
+
+        # [新增] 自动标签逻辑 (按年份)
+        if shot_time_obj:
+            year_tag_name = f"{shot_time_obj.year}年"
+            
+            # 查一下库里有没有这个年份标签
+            tag = Tag.query.filter_by(name=year_tag_name).first()
+            if not tag:
+                # 没有就创建一个，类型标记为 exif
+                tag = Tag(name=year_tag_name, type='exif')
+                db.session.add(tag)
+            
+            # 把标签贴到图片上
+            new_img.tags.append(tag)
         
         db.session.add(new_img)
         db.session.commit()
