@@ -27,7 +27,7 @@ def upload_image():
     if file.filename == '':
         return jsonify({'code': 400, 'msg': '文件名为空'}), 400
 
-    # 2. 获取当前用户 (暂时写死 uid=1，等做了登录后再换成 current_user.uid)
+    # 2.[修复] 获取当前用户 (做了登录后再换成了 current_user.uid)
     current_uid = get_jwt_identity()
 
     # 3. 生成安全的文件名 (防止文件名冲突或中文乱码)
@@ -96,7 +96,7 @@ def get_image_list():
     
     base_url = request.host_url.rstrip('/')
 
-    # 构建查询（过滤用户）
+    # [修复2] 构建查询（过滤用户）
     query = Image.query.filter_by(uid=current_uid)
     
     # 如果有搜索关键词，就在 original_name 或 location_str 里找
