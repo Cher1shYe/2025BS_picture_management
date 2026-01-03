@@ -96,8 +96,8 @@ def get_image_list():
     
     base_url = request.host_url.rstrip('/')
 
-    # 构建查询
-    query = Image.query
+    # 构建查询（过滤用户）
+    query = Image.query.filter_by(uid=current_uid)
     
     # 如果有搜索关键词，就在 original_name 或 location_str 里找
     if keyword:
