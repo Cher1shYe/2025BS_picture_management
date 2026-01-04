@@ -1,4 +1,18 @@
 services:
+  database:
+    image: mysql:8.0
+    container_name: photo-gallery-database
+    restart: unless-stopped
+    environment:
+      # 这里仍需设置 Root 密码（这是 MySQL 镜像的要求）
+      MYSQL_ROOT_PASSWORD: photo@zju
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      # 核心：挂载初始化脚本目录
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+
   backend:
     image: photo-gallery-backend:latest
     container_name: photo-gallery-backend
