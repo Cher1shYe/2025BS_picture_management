@@ -1,0 +1,21 @@
+services:
+  backend:
+    image: photo-gallery-backend:latest
+    container_name: photo-gallery-backend
+    restart: unless-stopped
+    command: gunicorn --bind 0.0.0.0:5001 "app:create_app()"
+    volumes:
+      - ./backend/static/uploads:/app/static/uploads
+    env_file:
+      - .env
+    ports:
+      - "5001:5001"
+
+  frontend:
+    image: photo-gallery-frontend:latest # 直接使用刚才 load 进去的镜像名
+    container_name: photo-gallery-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
