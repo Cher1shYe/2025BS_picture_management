@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { getToken } from "@/utils/auth";
+
 import axios from "axios";
 // 引入图标
-import {
-  VideoPlay,
-  VideoPause,
-  FullScreen,
-  CloseBold
-} from "@element-plus/icons-vue";
+import { VideoPlay, VideoPause, CloseBold } from "@element-plus/icons-vue";
 
 defineOptions({ name: "GalleryMode" });
 
@@ -38,9 +34,23 @@ const getGalleryData = async () => {
   }
 };
 
+// --- 核心：控制 Pure Admin 布局全屏 ---
+const toggleLayoutMaximize = (start: boolean) => {
+  const app = document.getElementById("app");
+  if (!app) return;
+  if (start) {
+    // 添加 main-maximize 类 -> 框架会自动隐藏 Sidebar 和 Navbar
+    app.classList.add("main-maximize");
+  } else {
+    // 移除类 -> 恢复 Sidebar 和 Navbar
+    app.classList.remove("main-maximize");
+  }
+};
+
 // 打开轮播
 const openCarousel = (index: number) => {
   initialIndex.value = index;
+  toggleLayoutMaximize(true);
   showCarousel.value = true;
 };
 
@@ -79,6 +89,10 @@ const closeCarousel = () => {
   showCarousel.value = false;
   stopTimer();
   autoPlay.value = false; // 关闭自动播放
+  // 延迟一点点恢复，防止闪烁
+  setTimeout(() => {
+    toggleLayoutMaximize(false);
+  }, 100);
 };
 
 // 键盘监听 (按 Esc 退出)
@@ -97,13 +111,15 @@ import { onUnmounted } from "vue";
 onUnmounted(() => {
   stopTimer();
   window.removeEventListener("keydown", handleKeydown);
+  // 离开页面时必须强制恢复布局，否则侧边栏会一直消失！
+  toggleLayoutMaximize(false);
 });
 </script>
 
 <template>
   <div class="gallery-container p-4">
     <div class="mb-4 flex justify-between items-center">
-      <h2 class="text-xl font-bold text-gray-700">🖼️ 沉浸式画廊 (Gallery)</h2>
+      <h2 class="text-xl font-bold text-gray-700">🖼️ 画廊模式 (Gallery)</h2>
       <el-button
         type="primary"
         size="large"
@@ -140,23 +156,26 @@ onUnmounted(() => {
     </div>
 
     <!-- 全屏轮播层 (Overlay) -->
+    <!-- z-index 设高一点，遮盖住面包屑等可能残留的元素 -->
     <div
       v-if="showCarousel"
-      class="fixed inset-0 z-50 bg-black flex flex-col justify-center"
+      class="fixed inset-0 z-[9999] bg-black flex flex-col justify-center"
+      style="margin: 0 !important; top: 0; left: 0; width: 100vw; height: 100vh"
     >
-      <!-- 主要退出按钮 - 居中上方，更明显的位置 -->
+      <!-- 顶部控制栏 -->
       <div
-        class="absolute top-8 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-4 bg-black/50 backdrop-blur-sm px-6 py-3 rounded-full shadow-2xl hover:bg-black/70 transition-all duration-300"
-        @click="closeCarousel"
+        class="absolute top-0 left-0 right-0 z-[10000] flex justify-between items-center p-6 bg-gradient-to-b from-black/80 to-transparent"
       >
-        <!-- 退出图标 -->
-        <el-icon size="24" color="#fff">
-          <CloseBold />
-        </el-icon>
-        <!-- 退出文字提示 -->
-        <span class="text-white font-semibold text-lg">退出播放模式</span>
-        <!-- ESC 提示 -->
-        <span class="text-white/80 text-sm ml-2">(或按 Esc 键)</span>
+        <div class="text-white/80 font-mono">
+          {{ initialIndex + 1 }} / {{ imageList.length }}
+        </div>
+        <div
+          class="cursor-pointer bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all flex items-center gap-2 px-4"
+          @click="closeCarousel"
+        >
+          <span class="text-white text-sm">退出播放(或按Esc退出)</span>
+          <el-icon size="20" color="#fff"><CloseBold /></el-icon>
+        </div>
       </div>
       <!-- 自动播放控制器 -->
       <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex gap-4">
