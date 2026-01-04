@@ -6,7 +6,8 @@ defineProps({
   collapse: Boolean
 });
 
-const { title, getLogo } = useNav();
+const title = "图片管理系统";
+
 import MyLogo from "@/assets/logo.jpg";
 </script>
 
