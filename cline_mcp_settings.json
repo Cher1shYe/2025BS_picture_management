@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "photo-system": {
+      "command": "/opt/anaconda3/envs/mcp_env/bin/python",
+      "args": [
+        "/Users/yebohou/zju/B:S/Picture_management/backend/mcp_server.py"
+      ]
+    }
+  }
+}

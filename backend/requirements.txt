@@ -10,3 +10,5 @@ cryptography
 Pillow
 transformers
 torch
+mcp
+fastmcp

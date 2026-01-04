@@ -26,6 +26,8 @@ const imageList = ref([]);
 const total = ref(0);
 const allTags = ref([]); // 存储供筛选的标签列表
 
+const analyzing = ref(false);
+
 // 查询参数
 const queryParams = reactive({
   page: 1,
@@ -90,6 +92,33 @@ const getImages = async () => {
 const handleSearch = () => {
   queryParams.page = 1; // 搜索时重置回第一页
   getImages();
+};
+
+const handleAnalyze = async (id: number) => {
+  analyzing.value = true; // 开始转圈
+  try {
+    const res = await axios.post(
+      `/api/ai/analyze/${id}`,
+      {},
+      {
+        headers: { Authorization: "Bearer " + getToken()?.accessToken }
+      }
+    );
+    if (res.data.code === 200) {
+      const tags = res.data.data;
+      message(
+        tags.length > 0 ? `识别成功: ${tags.join(", ")}` : "未识别出新标签",
+        { type: "success" }
+      );
+      getImages(); // 刷新列表查看新标签
+      getAllTags(); // 获取系统所有标签
+    }
+  } catch (e) {
+    console.error(e);
+    message("AI 识别失败", { type: "error" });
+  } finally {
+    analyzing.value = false; // 停止转圈
+  }
 };
 /** 【新增】重制搜索处理 */
 const handleReset = () => {
@@ -394,6 +423,14 @@ onMounted(() => {
                   title="编辑图片"
                   @click.stop="handleEdit(item)"
                 />
+                <el-button
+                  type="warning"
+                  size="small"
+                  :loading="analyzing"
+                  @click="handleAnalyze(item.id)"
+                >
+                  🤖 AI 识别
+                </el-button>
               </div>
             </div>
           </el-card>

@@ -1,4 +1,5 @@
 # controller/ai.py
+import os
 from flask import Blueprint, jsonify, request
 from exts import db
 from database.models import Image, Tag
