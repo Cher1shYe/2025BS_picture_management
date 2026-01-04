@@ -31,3 +31,5 @@ backend/static/uploads/*
 node_modules/
 dist/
 npm-debug.log
+
+photo_images.tar
