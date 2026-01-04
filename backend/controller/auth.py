@@ -1,7 +1,7 @@
 # backend/controller/auth.py
 import re
 import datetime
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
 from email_validator import validate_email, EmailNotValidError
@@ -138,7 +138,10 @@ def login():
         
         # 3. 生成 Token (identity 转为字符串比较稳妥)
         access_token = create_access_token(identity=str(user.uid))
-        
+        avatar_url = ""
+        if user.avatar:
+        # 假设我们通过 static 目录访问
+          avatar_url = url_for('static', filename=f'uploads/avatars/{user.avatar}', _external=True)
         # 4. 返回前端需要的数据结构
         # Pure Admin 前端通常需要 roles 数组和 expires 时间
         return jsonify({
@@ -151,7 +154,8 @@ def login():
                 # 将整数 role 转换为前端能理解的角色数组
                 'roles': ['admin'] if user.role == 0 else ['common'], 
                 # 随便给一个未来的过期时间，防止前端拦截器报错
-                'expires': '2030/12/30 23:59:59'
+                'expires': '2030/12/30 23:59:59',
+                'avatar': avatar_url  # 新增头像字段
             }
         })
     else:

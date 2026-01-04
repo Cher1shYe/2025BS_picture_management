@@ -15,6 +15,7 @@ import {
 } from "@element-plus/icons-vue";
 import { ElMessageBox } from "element-plus";
 import ImageEditor from "@/components/ImageEditor/index.vue";
+import AIChatBtn from "./components/AIChatBtn.vue";
 
 defineOptions({
   name: "ImageList"
@@ -459,6 +460,7 @@ onUnmounted(() => {
 
     <!-- 图片编辑器组件 -->
     <ImageEditor ref="editorRef" :refresh-list="onEditorSuccess" />
+    <AIChatBtn />
   </div>
 </template>
 

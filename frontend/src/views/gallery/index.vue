@@ -14,6 +14,7 @@ const loading = ref(false);
 // 轮播相关状态
 const showCarousel = ref(false);
 const initialIndex = ref(0);
+const currentIndex = ref(0); // [新增] 用来实时追踪当前是第几张
 const autoPlay = ref(false);
 const carouselRef = ref(null);
 let timer = null;
@@ -50,6 +51,7 @@ const toggleLayoutMaximize = (start: boolean) => {
 // 打开轮播
 const openCarousel = (index: number) => {
   initialIndex.value = index;
+  currentIndex.value = index; // [新增] 打开时，当前页就是初始页
   toggleLayoutMaximize(true);
   showCarousel.value = true;
 };
@@ -78,7 +80,8 @@ const stopTimer = () => {
 };
 
 // 监听轮播改变 (如果手动切了，重置计时器)
-const handleChange = () => {
+const handleChange = (val: number) => {
+  currentIndex.value = val; // [新增] 更新当前页码
   if (autoPlay.value) {
     startTimer(); // 重置倒计时
   }
@@ -167,7 +170,7 @@ onUnmounted(() => {
         class="absolute top-0 left-0 right-0 z-[10000] flex justify-between items-center p-6 bg-gradient-to-b from-black/80 to-transparent"
       >
         <div class="text-white/80 font-mono">
-          {{ initialIndex + 1 }} / {{ imageList.length }}
+          {{ currentIndex + 1 }} / {{ imageList.length }}
         </div>
         <div
           class="cursor-pointer bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all flex items-center gap-2 px-4"

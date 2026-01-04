@@ -29,7 +29,7 @@ def get_user_info():
     avatar_url = ""
     if user.avatar:
         # 假设我们通过 static 目录访问
-        avatar_url = f"http://localhost:5001/static/uploads/avatars/{user.avatar}"
+        avatar_url = url_for('static', filename=f'uploads/avatars/{user.avatar}', _external=True)
     
     return jsonify({
         'code': 200,
@@ -155,7 +155,7 @@ def upload_avatar():
         user.avatar = filename
         db.session.commit()
         
-        full_url = f"http://localhost:5001/static/uploads/avatars/{filename}"
+        full_url = url_for('static', filename=f'uploads/avatars/{filename}', _external=True)
         
         return jsonify({'code': 200, 'success': True, 'msg': '头像上传成功', 'data': {'avatar': full_url}})
     

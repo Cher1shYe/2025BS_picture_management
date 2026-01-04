@@ -1,87 +1,98 @@
 # mcp_server.py
 from mcp.server.fastmcp import FastMCP
-from sqlalchemy import create_engine, text
-from dotenv import load_dotenv
+import pymysql
 import os
-import json
+from dotenv import load_dotenv
 
 load_dotenv() 
 
+# 创建 MCP 服务，名字叫 "PhotoSys"
+mcp = FastMCP("PhotoSys")
+
+DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_USER = os.getenv('DB_USER')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_PORT = os.getenv('DB_PORT', '3306')
 DB_NAME = os.getenv('DB_NAME')
+DB_PORT = int(os.getenv('DB_PORT', '3306')) # pymysql 需要整数类型的端口
 
-DB_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# 数据库配置 (请修改为你的实际配置)
+DB_CONFIG = {
+    "host": DB_HOST,
+    "user": DB_USER,
+    "password": DB_PASSWORD,
+    "database": DB_NAME,
+    "port": DB_PORT,
+    "cursorclass": pymysql.cursors.DictCursor
+}
 
-# 初始化 MCP 服务
-mcp = FastMCP("PhotoSystem Gallery")
-
-engine = create_engine(DB_URI)
+def get_connection():
+    return pymysql.connect(**DB_CONFIG)
 
 @mcp.tool()
-def search_images(keyword: str = None, date_start: str = None, limit: int = 5):
+def search_images(keywords: str = None, location: str = None, start_date: str = None, end_date: str = None) -> str:
     """
-    Search for images in the gallery database.
+    根据条件搜索图片数据库。
     
     Args:
-        keyword: Search term for tags (e.g., "cat", "landscape", "2024")
-        date_start: Filter images uploaded after this date (YYYY-MM-DD)
-        limit: Max number of results to return
+        keywords: 搜索关键词，如 '猫', '风景', '红色'
+        location: 地点字符串，如 '杭州'
+        start_date: 开始日期 YYYY-MM-DD
+        end_date: 结束日期 YYYY-MM-DD
     """
-    with engine.connect() as conn:
-        # 构建 SQL 查询
-        sql = """
-            SELECT DISTINCT i.iid, i.filename, i.location_str, i.shot_time
-            FROM image i
-            LEFT JOIN image_tags it ON i.iid = it.image_id
-            LEFT JOIN tag t ON it.tag_id = t.tid
-            WHERE 1=1
-        """
-        params = {}
-        
-        if keyword:
-            sql += " AND (t.name LIKE :kw OR i.location_str LIKE :kw)"
-            params['kw'] = f"%{keyword}%"
+    sql = """
+    SELECT 
+        i.iid, i.filename, i.url, i.thumb_url, i.location_str, i.shot_time,
+        GROUP_CONCAT(t.name) as tags
+    FROM image i
+    LEFT JOIN image_tags it ON i.iid = it.image_id
+    LEFT JOIN tag t ON it.tag_id = t.tid
+    WHERE 1=1
+    """
+    params = []
+
+    if keywords:
+        sql += " AND (i.filename LIKE %s OR t.name LIKE %s)"
+        params.extend([f"%{keywords}%", f"%{keywords}%"])
+    
+    if location:
+        sql += " AND i.location_str LIKE %s"
+        params.append(f"%{location}%")
+
+    if start_date:
+        sql += " AND i.shot_time >= %s"
+        params.append(start_date)
+    if end_date:
+        sql += " AND i.shot_time <= %s"
+        params.append(end_date)
+
+    sql += " GROUP BY i.iid ORDER BY i.shot_time DESC LIMIT 20"
+
+    try:
+        conn = get_connection()
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            results = cursor.fetchall()
             
-        if date_start:
-            sql += " AND i.shot_time >= :date"
-            params['date'] = date_start
-            
-        sql += " LIMIT :limit"
-        params['limit'] = limit
+        conn.close()
         
-        # 执行查询
-        result = conn.execute(text(sql), params).fetchall()
-        
-        # 格式化返回结果给大模型
+        # 将结果处理成更轻量的 JSON 字符串返回
         images = []
-        for row in result:
+        for row in results:
             images.append({
-                "id": row[0],
-                "filename": row[1],
-                "location": row[2],
-                "time": str(row[3]),
-                # 构造本地访问 URL (假设 MCP 和网页在同一台机器)
-                "url": f"http://localhost:5001/static/uploads/{row[1]}"
+                "id": row['iid'],
+                "url": row['url'],
+                "thumb": row['thumb_url'] or row['url'], # 优先用缩略图
+                "name": row['filename'],
+                "location": row['location_str'],
+                "date": str(row['shot_time'])
             })
             
-        if not images:
-            return "No images found matching criteria."
-            
-        return json.dumps(images, ensure_ascii=False, indent=2)
-
-@mcp.tool()
-def get_image_statistics():
-    """Get total count of images and top tags."""
-    with engine.connect() as conn:
-        count = conn.execute(text("SELECT COUNT(*) FROM image")).scalar()
-        tags = conn.execute(text("SELECT name, COUNT(*) as c FROM tag t JOIN image_tags it ON t.tid=it.tag_id GROUP BY t.tid ORDER BY c DESC LIMIT 5")).fetchall()
+        import json
+        return json.dumps(images, ensure_ascii=False)
         
-        tag_str = ", ".join([f"{t[0]}({t[1]})" for t in tags])
-        return f"Total Images: {count}. Top Tags: {tag_str}"
+    except Exception as e:
+        return f"查询出错: {str(e)}"
 
 if __name__ == "__main__":
-    # 运行 MCP 服务器
-    mcp.run()
+    # 使用 stdio 模式运行，这是 MCP 的标准运行方式
+    mcp.run(transport='stdio')
