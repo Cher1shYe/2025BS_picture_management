@@ -28,8 +28,10 @@ def get_user_info():
     # 拼接完整的头像 URL
     avatar_url = ""
     if user.avatar:
-        # 假设我们通过 static 目录访问
-        avatar_url = url_for('static', filename=f'uploads/avatars/{user.avatar}', _external=True)
+        base_url = request.host_url.rstrip('/')
+        # 假设 user.avatar 数据库里只存了文件名 (如 "uuid.jpg")
+        # 手动拼接静态资源路径
+        avatar_url = f"{base_url}/static/uploads/avatars/{user.avatar}"
     
     return jsonify({
         'code': 200,
@@ -155,7 +157,8 @@ def upload_avatar():
         user.avatar = filename
         db.session.commit()
         
-        full_url = url_for('static', filename=f'uploads/avatars/{filename}', _external=True)
+        base_url = request.host_url.rstrip('/')
+        full_url = f"{base_url}/static/uploads/avatars/{filename}"
         
         return jsonify({'code': 200, 'success': True, 'msg': '头像上传成功', 'data': {'avatar': full_url}})
     
