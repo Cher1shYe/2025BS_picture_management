@@ -7,6 +7,7 @@ defineProps({
 });
 
 const { title, getLogo } = useNav();
+import MyLogo from "@/assets/logo.jpg";
 </script>
 
 <template>
@@ -19,7 +20,7 @@ const { title, getLogo } = useNav();
         class="sidebar-logo-link"
         :to="getTopMenu()?.path ?? '/'"
       >
-        <img :src="getLogo()" alt="logo" />
+        <img :src="MyLogo" alt="logo" />
         <span class="sidebar-title">{{ title }}</span>
       </router-link>
       <router-link
@@ -29,7 +30,7 @@ const { title, getLogo } = useNav();
         class="sidebar-logo-link"
         :to="getTopMenu()?.path ?? '/'"
       >
-        <img :src="getLogo()" alt="logo" />
+        <img :src="MyLogo" alt="logo" />
         <span class="sidebar-title">{{ title }}</span>
       </router-link>
     </transition>

@@ -9,6 +9,7 @@ from sqlalchemy import or_
 from database.models import Image, Tag
 from utils.image_process import make_thumbnail, extract_exif
 from datetime import datetime # 处理时间
+from sqlalchemy import func
 
 # 引用我们刚刚定义的 db 和模型
 from exts import db
@@ -172,18 +173,22 @@ def get_image_list():
     query = query.order_by(Image.upload_time.desc())
 
     # 【新增】按时间范围筛选 (优先用 shot_time，没有则用 upload_time)
-    # 这里稍微简化，只筛选 shot_time，实际业务中可以用 coalesce
-    if start_date and end_date:
+    if start_date or end_date:
         try:
-            # 转换字符串为日期对象，注意 end_date 要加一天或设为当晚23:59:59
-            s_date = datetime.strptime(start_date, '%Y-%m-%d')
-            e_date = datetime.strptime(end_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+            # 使用 coalesce：如果 shot_time 为空，则取 upload_time
+            target_time = func.coalesce(Image.shot_time, Image.upload_time)
             
-            query = query.filter(
-                Image.shot_time.between(s_date, e_date)
-            )
+            if start_date:
+                s_date = datetime.strptime(start_date, '%Y-%m-%d')
+                query = query.filter(target_time >= s_date)
+                
+            if end_date:
+                e_date = datetime.strptime(end_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59)
+                query = query.filter(target_time <= e_date)
+                
+            print(f"正在筛选时间范围: {start_date} 至 {end_date}")
         except ValueError:
-            pass # 日期格式不对就不筛了
+            pass
     
 
     # 排序与分页

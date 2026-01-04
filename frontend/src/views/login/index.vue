@@ -16,6 +16,7 @@ import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 import { getRegister } from "@/api/user";
 
+import MyLogo from "@/assets/logo.jpg";
 import dayIcon from "@/assets/svg/day.svg?component";
 import darkIcon from "@/assets/svg/dark.svg?component";
 import Lock from "~icons/ri/lock-fill";
@@ -139,13 +140,15 @@ const immediateDebounce: any = debounce(
       </div>
       <div class="login-box">
         <div class="login-form">
-          <avatar class="avatar" />
+          <div class="logo-wrapper">
+            <img :src="MyLogo" class="custom-logo" alt="logo" />
+          </div>
           <Motion>
             <h2 class="outline-hidden">
-              {{ title }} - {{ isRegister ? "账号注册" : "账号登录" }}
+              Picture Manager <br />
+              {{ isRegister ? "账号注册" : "账号登录" }}
             </h2>
           </Motion>
-
           <el-form
             ref="ruleFormRef"
             :model="ruleForm"
@@ -231,5 +234,17 @@ const immediateDebounce: any = debounce(
 <style lang="scss" scoped>
 :deep(.el-input-group__append, .el-input-group__prepend) {
   padding: 0;
+}
+/* 👇 [新增] 控制 logo 大小 */
+.logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+/* 自定义logo大小*/
+.custom-logo {
+  width: 200px;
+  height: 200px; /* 比例调整 */
+  object-fit: contain;
 }
 </style>
