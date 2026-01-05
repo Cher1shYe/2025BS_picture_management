@@ -77,11 +77,15 @@ def search_images(keywords: str = None, location: str = None, start_date: str = 
         
         # 将结果处理成更轻量的 JSON 字符串返回
         images = []
+        BASE_URL = os.getenv('BASE_URL', '').rstrip('/')
+
         for row in results:
+            img_path = row['url']
+            thumb_path = row['thumb_url'] or img_path
             images.append({
                 "id": row['iid'],
-                "url": row['url'],
-                "thumb": row['thumb_url'] or row['url'], # 优先用缩略图
+                "url": f"{BASE_URL}{img_path}",
+                "thumb": f"{BASE_URL}{thumb_path}",
                 "name": row['filename'],
                 "location": row['location_str'],
                 "date": str(row['shot_time'])

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { hasPerms } from "@/utils/auth";
 import { useUserStoreHook } from "@/store/modules/user";
 
@@ -106,4 +106,4 @@ defineOptions({
       </el-space>
     </el-card>
   </div>
-</template>
+</template> -->

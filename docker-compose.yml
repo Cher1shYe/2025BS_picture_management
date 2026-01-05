@@ -20,6 +20,7 @@ services:
     command: gunicorn --bind 0.0.0.0:5001 "app:create_app()"
     volumes:
       - ./backend/static/uploads:/app/static/uploads
+      - ./env:/app/.env
     env_file:
       - .env
     ports:

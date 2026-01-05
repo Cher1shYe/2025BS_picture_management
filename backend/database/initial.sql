@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS `photo_sys` CHARACTER SET utf8mb4 COLLATE utf8mb4_
 
 -- 2. 创建新用户（如果不存在）并设置密码
 -- 注意：'%' 表示允许从任何 IP 连接（容器间通信需要）
-CREATE USER IF NOT EXISTS 'zju'@'%' IDENTIFIED BY '996@zju';
+CREATE USER IF NOT EXISTS 'zju'@'%' IDENTIFIED BY '2218_pass@ZJU';
 
 -- 3. 给用户授权该数据库的所有权限
 GRANT ALL PRIVILEGES ON `photo_sys`.* TO 'zju'@'%';

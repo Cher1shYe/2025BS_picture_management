@@ -27,7 +27,7 @@ export default {
       component: () => import("@/views/person/index.vue"),
       meta: {
         title: "个人中心",
-        icon: "ep:user", // 需要确保图标库有这个
+        icon: "ep:user",
         showLink: true
       }
     }

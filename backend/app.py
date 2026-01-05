@@ -1,6 +1,6 @@
 # backend/app.py
 import os
-from flask import Flask, url_for
+from flask import Flask
 from exts import db
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
